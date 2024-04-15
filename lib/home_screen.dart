@@ -8,12 +8,13 @@ class HomeScreen extends StatelessWidget {
     final response = await http.get(Uri.parse('http://nrweb.com.mx/reportes/api_prueba.php?nombre=%22alejandro%22&hora=10'));
 
     if (response.statusCode == 200) {
-      final jsonData = jsonDecode(response.body);
-      print('======= JSON Recibido =======');
-      print(jsonData);
-      return jsonData;
+      return jsonDecode(response.body);
+    } else if (response.statusCode == 404) {
+      throw Exception('Objeto no encontrado');
+    } else if (response.statusCode == 500) {
+      throw Exception('Error interno del servidor');
     } else {
-      throw Exception('Fallo al cargar la API');
+      throw Exception('Error desconocido');
     }
   }
 
@@ -26,16 +27,36 @@ class HomeScreen extends StatelessWidget {
       body: Center(
         child: ElevatedButton(
           onPressed: () async {
-            // Obtener datos del API
-            Map<String, dynamic> data = await _fetchData();
-            // Navegar a ResultScreen pasando los datos obtenidos
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => ResultScreen(
-                numeros: List<int>.from(data['numeros']),
-                colores: List<String>.from(data['colores']),
-              )), 
-            );
+            try {
+              // Obtener datos del API
+              Map<String, dynamic> data = await _fetchData();
+              // Navegar a ResultScreen pasando los datos obtenidos
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ResultScreen(
+                  numeros: List<int>.from(data['numeros']),
+                  colores: List<String>.from(data['colores']),
+                )),
+              );
+            } catch (e) {
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    title: Text('Error'),
+                    content: Text(e.toString()),
+                    actions: <Widget>[
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Text('Cerrar'),
+                      ),
+                    ],
+                  );
+                },
+              );
+            }
           },
           child: Text('Iniciar'),
         ),
