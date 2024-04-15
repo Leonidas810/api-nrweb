@@ -5,7 +5,13 @@ import 'result_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   Future<Map<String, dynamic>> _fetchData() async {
-    final response = await http.get(Uri.parse('http://nrweb.com.mx/reportes/api_prueba.php?nombre=%22alejandro%22&hora=10'));
+    final url = Uri.parse('http://nrweb.com.mx/reportes/api_prueba.php?nombre=%22alejandro%22&hora=10');
+    
+    if (!url.isAbsolute) {
+      throw Exception('URL incorrecta');
+    }
+
+    final response = await http.get(url);
 
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
@@ -28,9 +34,7 @@ class HomeScreen extends StatelessWidget {
         child: ElevatedButton(
           onPressed: () async {
             try {
-              // Obtener datos del API
               Map<String, dynamic> data = await _fetchData();
-              // Navegar a ResultScreen pasando los datos obtenidos
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => ResultScreen(
