@@ -4,11 +4,14 @@ import 'dart:convert';
 import 'result_screen.dart';
 
 class HomeScreen extends StatelessWidget {
-  Future<void> _fetchData() async {
+  Future<Map<String, dynamic>> _fetchData() async {
     final response = await http.get(Uri.parse('http://nrweb.com.mx/reportes/api_prueba.php?nombre=%22alejandro%22&hora=10'));
 
     if (response.statusCode == 200) {
-      print(jsonDecode(response.body));
+      final jsonData = jsonDecode(response.body);
+      print('======= JSON Recibido =======');
+      print(jsonData);
+      return jsonData;
     } else {
       throw Exception('Fallo al cargar la API');
     }
@@ -23,10 +26,15 @@ class HomeScreen extends StatelessWidget {
       body: Center(
         child: ElevatedButton(
           onPressed: () async {
-            await _fetchData();
+            // Obtener datos del API
+            Map<String, dynamic> data = await _fetchData();
+            // Navegar a ResultScreen pasando los datos obtenidos
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => ResultScreen()), 
+              MaterialPageRoute(builder: (context) => ResultScreen(
+                numeros: List<int>.from(data['numeros']),
+                colores: List<String>.from(data['colores']),
+              )), 
             );
           },
           child: Text('Iniciar'),
